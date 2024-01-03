@@ -1,42 +1,6 @@
 import 'package:flutter/material.dart';
 
-List<Tab> tabs = [
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-  const Tab(
-      child: Text(
-    "Spotify",
-    style: TextStyle(fontSize: 18),
-  )),
-];
+
 
 List<Widget> tabsContent = [
   Container(color: Colors.teal),
