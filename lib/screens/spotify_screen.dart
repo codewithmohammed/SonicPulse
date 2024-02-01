@@ -5,8 +5,14 @@ class SpotifyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: Container(),
+      backgroundColor: colorScheme.primary,
+      appBar: AppBar(
+        leading: const Icon(Icons.sort),
+      ),
+      body: const Text('spotify'),
     );
   }
 }
