@@ -13,7 +13,7 @@ class CarousalTextButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           text,
-          style: TextStyle(fontSize: 20, color: colorScheme.secondary),
+          style: TextStyle(fontSize: 17, color: colorScheme.secondary),
         ));
   }
 }

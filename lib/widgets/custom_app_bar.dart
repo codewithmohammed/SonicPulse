@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget {
   const CustomAppBar(
-      {super.key, required this.colorScheme, this.leading, this.actions});
+      {super.key, this.leading, this.actions,this.backgroundColor});
 
   final Widget? leading;
   final List<Widget>? actions;
-  final ColorScheme colorScheme;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-        backgroundColor: colorScheme.background,
+        backgroundColor: backgroundColor,
         leadingWidth: 200,
         leading:
             Padding(padding: const EdgeInsets.only(left: 10), child: leading),
-        actions: actions
-        );
+        actions: actions);
   }
 }

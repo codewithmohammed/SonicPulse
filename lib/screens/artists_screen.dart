@@ -5,11 +5,11 @@ class ArtistScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    return  Scaffold(
+    return Scaffold(
       backgroundColor: colorScheme.primary,
-      body: Text('data'),
+      body: const Text('data'),
     );
   }
 }

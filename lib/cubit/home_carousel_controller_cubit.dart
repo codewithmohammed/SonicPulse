@@ -1,58 +1,53 @@
+// import 'dart:async';
+
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-class HomeAppBarCarouselController extends Cubit<CarouselController> {
-  HomeAppBarCarouselController() : super(CarouselController());
+import 'package:get/get.dart';
+// HomeAppBarCarouselController using GetX
+class HomeAppBarCarouselController extends GetxController {
+  final CarouselController carouselController = CarouselController();
 
   void animateAndChangePage(int pageNum) async {
     try {
-      // Future.delayed(Duration(seconds: 3));
-      // Assuming animateToPage might throw an exception
-      await state.animateToPage(pageNum);
-      emit(state);
+      await carouselController.animateToPage(pageNum);
+      update(); // Notify listeners
     } catch (e) {
-      // Handle the exception appropriately
       print('Error while changing page: $e');
     }
   }
 
-   void jumpAndChangePage(int pageNum)  {
+  void jumpAndChangePage(int pageNum) {
     try {
-      // Future.delayed(Duration(seconds: 3));
-      // Assuming animateToPage might throw an exception
-       state.jumpToPage(pageNum);
-      emit(state);
+      carouselController.jumpToPage(pageNum);
+      update(); // Notify listeners
     } catch (e) {
-      // Handle the exception appropriately
       print('Error while changing page: $e');
     }
   }
 }
 
-class HomeScreenCarouselController extends Cubit<CarouselController> {
-  HomeScreenCarouselController() : super(CarouselController());
+// HomeScreenPageController using GetX
+class HomeScreenPageController extends GetxController {
+  final PageController pageController = PageController();
 
   void animateAndChangePage(int pageNum) async {
     try {
-      // Future.delayed(Duration(seconds: 3));
-      // Assuming animateToPage might throw an exception
-      await state.animateToPage(pageNum,
-          duration: Duration(milliseconds: 750), curve: Curves.linearToEaseOut);
-      emit(state);
+      await pageController.animateToPage(
+        pageNum,
+        duration: const Duration(milliseconds: 750),
+        curve: Curves.linearToEaseOut,
+      );
+      update(); // Notify listeners
     } catch (e) {
-      // Handle the exception appropriately
       print('Error while changing page: $e');
     }
   }
-     void jumpAndChangePage(int pageNum)  {
+
+  void jumpAndChangePage(int pageNum) {
     try {
-      // Future.delayed(Duration(seconds: 3));
-      // Assuming animateToPage might throw an exception
-       state.jumpToPage(pageNum);
-      emit(state);
+      pageController.jumpToPage(pageNum);
+      update(); // Notify listeners
     } catch (e) {
-      // Handle the exception appropriately
       print('Error while changing page: $e');
     }
   }

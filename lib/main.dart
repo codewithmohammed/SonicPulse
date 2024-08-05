@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:musicplayer/cubit/home_carousel_controller_cubit.dart';
+import 'package:get/get.dart';
 import 'package:musicplayer/screens/home/home_screen.dart';
+import 'package:musicplayer/screens/music/music_player_page.dart';
 import 'package:musicplayer/theme/theme.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,19 +13,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        theme: lightMode,
-        darkTheme: darkMode,
-        debugShowCheckedModeBanner: false,
-        home: MultiProvider(
-          providers: [
-            BlocProvider<HomeAppBarCarouselController>(
-              create: (context) => HomeAppBarCarouselController(),
-            ),BlocProvider<HomeScreenCarouselController>(
-              create: (context) => HomeScreenCarouselController(),
-            ),
-          ],
-          child: const HomeScreen(),
-        ));
+    return GetMaterialApp(
+      darkTheme: darkMode,
+      theme: lightMode,
+      debugShowCheckedModeBanner: false,
+      title: 'Sonic Pulse',
+      // home: const HomeScreen(),
+      initialRoute: '/',
+      getPages: [
+        GetPage(name: '/', page: () => const HomeScreen()),
+        GetPage(
+          name: '/musicPlayer',
+          page: () => MusicPlayerPage(
+            // imageUrl: Get.parameters['imageUrl']!,
+            // title: Get.parameters['title']!,
+            // artist: Get.parameters['artist']!,
+          ),
+          transition: Transition.downToUp,
+        ),
+      ],
+    );
   }
 }
