@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:musicplayer/controller/album_controller.dart';
 import 'package:musicplayer/screens/album/album_details_screen.dart';
-import 'package:musicplayer/screens/home/home_screen.dart';
 import 'package:musicplayer/widgets/screen_app_bar.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -56,13 +55,15 @@ class AlbumScreen extends StatelessWidget {
                         (BuildContext context, int index) {
                           final album = albumController.albums[index];
                           return GestureDetector(
-                            onTap:() =>   Get.to(() => AlbumDetailScreen(album: album)),
-                            child: AlbumGridItem(album: album));
+                              onTap: () =>
+                                  Get.to(() => AlbumDetailScreen(album: album)),
+                              child: AlbumGridItem(album: album));
                         },
                         childCount: albumController.albums.length,
                       ),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
+                        mainAxisExtent: 250,
                         crossAxisCount: 2,
                         mainAxisSpacing: 8.0,
                         crossAxisSpacing: 8.0,

@@ -141,7 +141,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    final PlayerController playerController = Get.put(PlayerController());
+    final PlayerControllers playerController = Get.put(PlayerControllers());
     final HomeScreenPageController homeScreenPageController =
         Get.put(HomeScreenPageController());
     final HomeAppBarCarouselController homeAppBarCarouselController =

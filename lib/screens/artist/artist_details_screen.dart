@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:musicplayer/controller/album_controller.dart';
+// import 'package:musicplayer/controller/album_controller.dart';
+import 'package:musicplayer/controller/artist_controller.dart';
 import 'package:musicplayer/controller/player_controller.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-class AlbumDetailScreen extends StatelessWidget {
-  final AlbumModel album;
+class ArtistDetailScreen extends StatelessWidget {
+  final ArtistModel artistModel;
 
-  const AlbumDetailScreen({super.key, required this.album});
+  const ArtistDetailScreen({super.key, required this.artistModel});
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final AlbumController albumController = Get.find<AlbumController>();
+    final ArtistController artistController = Get.find<ArtistController>();
 
     return Scaffold(
       backgroundColor: colorScheme.primary,
       appBar: AppBar(
-        title: Text(album.album),
+        title: Text(artistModel.artist),
       ),
       body: FutureBuilder<List<SongModel>>(
-        future: albumController.audioQuery.queryAudiosFrom(
-          AudiosFromType.ALBUM_ID,
-          album.id,
+        future: artistController.audioQuery.querySongs(
+          // filter: artistName != "Unknown" ? artistName : null,
+          sortType: SongSortType.ARTIST,
+          orderType: OrderType.ASC_OR_SMALLER,
+          uriType: UriType.EXTERNAL,
         ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -44,17 +47,17 @@ class AlbumDetailScreen extends StatelessWidget {
               final song = songs[index];
               return ListTile(
                 leading: QueryArtworkWidget(
-                  controller: albumController.audioQuery,
+                  controller: artistController.audioQuery,
                   id: song.id,
                   type: ArtworkType.AUDIO,
                   nullArtworkWidget: const Icon(Icons.music_note),
                 ),
                 title: Text(song.title),
-                subtitle: Text(song.artist ?? 'Unknown Artist'),
+                subtitle: Text(song.album ?? 'Unknown Album'),
                 onTap: () {
                   // Play song
                   Get.find<PlayerControllers>()
-                      .playSongList(songs, song.album ?? "Album",song);
+                      .playSongList(songs, artistModel.artist, song);
                 },
               );
             },

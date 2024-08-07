@@ -11,7 +11,6 @@ class FavouriteScreen extends StatelessWidget {
     return Scaffold(
       appBar: const ScreenAppBar(),
       backgroundColor: colorScheme.primary,
-      body: const Text('Spotify'),
     );
   }
 }

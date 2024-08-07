@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:musicplayer/controller/player_controller.dart';
+import 'package:musicplayer/screens/add/add_song_screen.dart';
 import 'package:musicplayer/screens/home/home_screen.dart';
 import 'package:musicplayer/utils/icons.dart';
 import 'package:musicplayer/widgets/screen_app_bar.dart';
@@ -12,10 +14,22 @@ class TrackScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<PopupMenuEntry<dynamic>> menuItems = [
+      const PopupMenuItem(
+        value: 'option1',
+        child: Text('Option 1'),
+      ),
+      const PopupMenuItem(
+        value: 'option2',
+        child: Text('Option 2'),
+      ),
+      // Add more PopupMenuItems as needed
+    ];
+
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     // Instantiate the PlayerController
-    final PlayerController playerController = Get.put(PlayerController());
+    final PlayerControllers playerController = Get.put(PlayerControllers());
 
     return Scaffold(
       backgroundColor: colorScheme.primary,
@@ -81,7 +95,6 @@ class TrackScreen extends StatelessWidget {
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final song = songs[index];
-                            // print(songs[index].displayName);
                             return Column(
                               children: [
                                 ListTile(
@@ -94,19 +107,83 @@ class TrackScreen extends StatelessWidget {
                                   ),
                                   title: Text(song.title),
                                   subtitle: Text(song.artist ?? "Unknown"),
-                                  trailing: const Icon(Icons.more_vert),
+                                  trailing: PopupMenuButton<String>(
+                                    color: Colors.red,
+                                    icon: SvgPicture.asset(
+                                     CustomIcons.dotsVerticalIcon,
+                                    ),
+                                    onSelected: (String value) {
+                                      switch (value) {
+                                        case 'Add':
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const AddSongScreen(),
+                                            ),
+                                          );
+                                          break;
+                                        case 'Delete':
+                                          // Handle delete action
+                                          break;
+                                        case 'Share':
+                                          // Handle share action
+                                          break;
+                                        case 'Track Details':
+                                          // Handle track details action
+                                          break;
+                                        case 'Album':
+                                          // Handle album action
+                                          break;
+                                        case 'Artist':
+                                          // Handle artist action
+                                          break;
+                                        case 'Set As':
+                                          // Handle set as action
+                                          break;
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) {
+                                      return [
+                                        const PopupMenuItem(
+                                          value: 'Add',
+                                          child: Text('Add'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'Delete',
+                                          child: Text('Delete'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'Share',
+                                          child: Text('Share'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'Track Details',
+                                          child: Text('Track Details'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'Album',
+                                          child: Text('Album'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'Artist',
+                                          child: Text('Artist'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'Set As',
+                                          child: Text('Set As'),
+                                        ),
+                                      ];
+                                    },
+                                  ),
                                   onTap: () {
                                     playerController.songPlay(song.uri!, index);
                                   },
                                 ),
-                                const Divider(
-                                  color: Colors.grey,
-                                  thickness: 0.5,
-                                ),
                                 if (index == songs.length - 1)
                                   const SizedBox(
                                     height: 100,
-                                  )
+                                  ),
                               ],
                             );
                           },

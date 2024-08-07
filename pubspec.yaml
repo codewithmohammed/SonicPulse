@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   audio_session: ^0.1.21
+  audio_waveforms: ^1.0.5
   bloc: ^8.1.2
   carousel_slider: ^4.2.1
   cupertino_icons: ^1.0.2
@@ -44,11 +45,13 @@ dependencies:
   lottie: ^3.1.2
   on_audio_query: ^2.9.0
   palette_generator: ^0.3.3+4
+  path_provider: ^2.1.4
   permission_handler: ^11.3.1
   provider: ^6.1.1
   scrollable_positioned_list: ^0.3.8
   shared_preferences: ^2.3.1
   shimmer: ^3.0.0
+  sqflite: ^2.3.3+1
   svg_flutter: ^0.0.1
 
 dev_dependencies:
@@ -70,10 +73,12 @@ flutter:
     - assets/images/SONIC.svg
     - assets/svg/spotify.svg
     - assets/icons/filter.svg
+    - assets/icons/refresh.svg
     - assets/icons/play.svg
     - assets/icons/pause.svg
     - assets/icons/shuffle.svg
     - assets/icons/forward.svg
+    - assets/icons/dots_vertical.svg
     - assets/icons/backward.svg
     - assets/icons/listmusic.svg
   # An image asset can refer to one or more resolution-specific "variants", see

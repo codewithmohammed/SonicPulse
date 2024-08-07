@@ -1,155 +1,228 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:musicplayer/controller/player_controller.dart';
-import 'package:musicplayer/screens/home/home_screen.dart';
+import 'package:musicplayer/server/database_helper.dart';
 import 'package:musicplayer/utils/icons.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:audio_waveforms/audio_waveforms.dart';
+import 'dart:ui' as ui;
+
+// import 'player_controller.dart';
+// import 'custom_icons.dart';
 
 class MusicPlayerPage extends StatelessWidget {
-  final PlayerController controller = Get.put(PlayerController());
+  final PlayerControllers controller = Get.put(PlayerControllers());
 
   MusicPlayerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Obx(
-        () {
-          final currentSong = controller.songs.isNotEmpty
-              ? controller.songs[controller.currentIndex.value]
-              : null;
-          // final bgImage =
-          //     Image.asset(
-          //   controller.coverImageList[controller.randomNumber.value],
-          //   fit: BoxFit.cover,
-          // );
+    final colorScheme = Theme.of(context).colorScheme;
 
-          return Stack(
+    return Scaffold(
+      backgroundColor: colorScheme.primary,
+      appBar: AppBar(
+        title: const Text('Now Playing'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            onPressed: () async {
+              final currentSong =
+                  controller.songs[controller.currentIndex.value];
+              final favorite = {
+                'id': currentSong.id,
+                'title': currentSong.title,
+                'uri': currentSong.uri,
+              };
+
+              final dbHelper = DatabaseHelper();
+              await dbHelper.insertFavorite(favorite);
+
+              // Optionally, provide feedback to the user
+              Get.snackbar(
+                  'Favorites', '${currentSong.title} added to favorites');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.playlist_add),
+            onPressed: () {
+              // Add to custom playlist functionality
+            },
+          ),
+        ],
+      ),
+      body: Obx(() {
+        final currentSong = controller.songs.isNotEmpty
+            ? controller.songs[controller.currentIndex.value]
+            : null;
+
+        if (currentSong == null) {
+          return Center(
+            child: Text(
+              'No song playing',
+              style: TextStyle(color: colorScheme.onPrimary, fontSize: 18),
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Background Image
-              // Positioned.fill(
-              //   child: bgImage,
-              // ),
-              // Gradient overlay
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.6),
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.6),
-                      ],
+              // Album Art and Song Info
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 250,
+                      width: 250,
+                      child: QueryArtworkWidget(
+                        id: currentSong.id,
+                        type: ArtworkType.AUDIO,
+                        artworkFit: BoxFit.cover,
+                        nullArtworkWidget:
+                            const Icon(Icons.music_note, size: 250),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    Text(
+                      currentSong.title,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      currentSong.artist ?? 'Unknown Artist',
+                      style: TextStyle(
+                        color: colorScheme.onPrimary.withOpacity(0.7),
+                        fontSize: 18,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              // Music Player Controls
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(height: 50),
-                  // Song Info
-                  if (currentSong != null)
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 250,
-                            width: 250,
-                            child: QueryArtworkWidget(
-                              id: currentSong.id,
-                              type: ArtworkType.AUDIO,
-                              artworkFit: BoxFit.cover,
-                              nullArtworkWidget: const Icon(Icons.music_note),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            currentSong.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            currentSong.artist ?? 'Unknown Artist',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 18,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+              // Waveform Visualizer
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Container(
+                    // clipBehavior: Clip.antiAlias,
+                    margin: const EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 20.0),
+                    // decoration: BoxDecoration(
+                    //   color: Colors.black,
+                    //   borderRadius: BorderRadius.circular(20.0),
+                    //   boxShadow: [
+                    //     BoxShadow(
+                    //       color: Colors.grey.withOpacity(0.5),
+                    //       spreadRadius: 2,
+                    //       blurRadius: 5,
+                    //       offset:
+                    //           const Offset(0, 3), // changes position of shadow
+                    //     ),
+                    //   ],
+                    // ),
+                    child: AudioFileWaveforms(
+                      size: Size(MediaQuery.of(context).size.width * 0.8, 100),
+                      playerController: controller.playerController,
+                      continuousWaveform: true,
+                      playerWaveStyle: PlayerWaveStyle(
+                        scaleFactor: 0.9,
+                        fixedWaveColor: Colors.green.withOpacity(0.7),
+                        liveWaveColor: Colors.red,
+                        waveCap: StrokeCap.round,
                       ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      margin: const EdgeInsets.symmetric(vertical: 10.0),
+                      backgroundColor: Colors.black.withOpacity(0.8),
+                      animationDuration: const Duration(milliseconds: 600),
+                      animationCurve: Curves.easeInOut,
+                      // clipBehavior: Clip.antiAlias,
+                      waveformType: WaveformType.long,
+                      enableSeekGesture: true,
                     ),
-                  // Music Controls
-                  Column(
+                  )),
+
+              // Music Controls
+              // Music Controls
+              Column(
+                children: [
+                  Obx(() => Text(
+                        '${controller.position.value} / ${controller.duration.value}',
+                        style: TextStyle(color: colorScheme.onPrimary),
+                      )),
+                  Obx(() => Slider(
+                        min: 0,
+                        activeColor: Colors.green,
+                        max: controller.max.value,
+                        value: controller.currentValue.value,
+                        onChanged: (value) {
+                          controller.changeDurationToSecond(value.toInt());
+                        },
+                      )),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Progress bar
-                      Obx(
-                        () => Slider(
-                          min: 0,
-                          max: controller.max.value,
-                          value: controller.currentValue.value,
-                          onChanged: (value) {
-                            controller.changeDurationToSecond(value.toInt());
-                          },
+                      IconButton(
+                        icon: SvgPicture.asset(
+                          CustomIcons.backwardIcon,
+                          // color: const Color.fromARGB(255, 0, 0, 0)
                         ),
+                        onPressed: controller.onBackPlay,
                       ),
-                      // Control buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          SvgIconButton(
-                            svg: CustomIcons.backwardIcon,
-                            color: Colors.white,
-                            onPressed: controller.onBackPlay,
-                          ),
-                          SvgIconButton(
-                            svg: controller.isPlaying.value
-                                ? CustomIcons.pauseIcon
-                                : CustomIcons.playIcon,
+                      Obx(() => IconButton(
+                            icon: SvgPicture.asset(
+                              controller.isPlaying.value
+                                  ? CustomIcons.pauseIcon
+                                  : CustomIcons.playIcon,
+                              // color: Colors.white,
+                            ),
                             onPressed: controller.playPause,
-                            // size: 36,
-                          ),
-                          SvgIconButton(
-                            svg: CustomIcons.forwardIcon,
-                            onPressed: controller.onNextPlay,
-                          ),
-                        ],
-                      ),
-                      // Shuffle and Loop buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          SvgIconButton(
-                            svg: CustomIcons.shuffleIcon,
-                            color: Colors.white,
-                            onPressed: controller.playShuffled,
-                          ),
-                          SvgIconButton(
-                            svg: CustomIcons.listmusicIcon,
-                            color: Colors.white,
-                            onPressed: controller.onLoopClick,
-                          ),
-                        ],
+                          )),
+                      IconButton(
+                        icon: SvgPicture.asset(
+                          CustomIcons.forwardIcon,
+                          // color: Colors.white
+                        ),
+                        onPressed: controller.onNextPlay,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: SvgPicture.asset(
+                          CustomIcons.shuffleIcon,
+                          // color: Colors.white
+                        ),
+                        onPressed: controller.playShuffled,
+                      ),
+                      Obx(() => IconButton(
+                            icon: SvgPicture.asset(
+                              controller.isLooping.value
+                                  ? CustomIcons.refreshIcon
+                                  : CustomIcons.refreshIcon,
+                              // color: Colors.white
+                            ),
+                            onPressed: controller.onLoopClick,
+                          )),
+                    ],
+                  ),
                 ],
               ),
+              const SizedBox(height: 20),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      }),
     );
   }
 }

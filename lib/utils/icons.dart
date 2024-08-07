@@ -7,4 +7,6 @@ class CustomIcons {
   static const String backwardIcon = 'assets/icons/backward.svg';
   static const String listmusicIcon = 'assets/icons/listmusic.svg';
   static const String pauseIcon = 'assets/icons/pause.svg';
+  static const String refreshIcon = 'assets/icons/refresh.svg';
+  static const String dotsVerticalIcon = 'assets/icons/dots_vertical.svg';
 }
