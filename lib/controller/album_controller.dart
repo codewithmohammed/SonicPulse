@@ -1,32 +1,29 @@
 
-import 'package:get/get.dart';
-import 'package:on_audio_query/on_audio_query.dart';
+// import 'package:get/get.dart';
+// import 'package:on_audio_query/on_audio_query.dart';
 
-class AlbumController extends GetxController {
-  final OnAudioQuery audioQuery = OnAudioQuery();
-  var albums = <AlbumModel>[].obs;
+// class AlbumController extends GetxController {
+//   final OnAudioQuery audioQuery = OnAudioQuery();
+//   var albums = <AlbumModel>[].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    checkAndRequestPermissions();
-  }
+//   @override
+//   void onInit() {
+//     super.onInit();
+//     checkAndRequestPermissions();
+//   }
 
-  Future<void> checkAndRequestPermissions() async {
-    bool permissionGranted = await audioQuery.checkAndRequest(
-      retryRequest: true,
-    );
+//   Future<void> checkAndRequestPermissions() async {
+//     bool permissionGranted = await audioQuery.checkAndRequest(
+//       retryRequest: true,
+//     );
 
-    if (permissionGranted) {
-      loadAlbums();
-    } else {
-      // Handle permission denied
-      print('Permission Denied');
-    }
-  }
+//     if (permissionGranted) {
+//       loadAlbums();
+//     } else {
+//       // Handle permission denied
+//       print('Permission Denied');
+//     }
+//   }
 
-  Future<void> loadAlbums() async {
-    var queriedAlbums = await audioQuery.queryAlbums();
-    albums.value = queriedAlbums;
-  }
-}
+
+// }

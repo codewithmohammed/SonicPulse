@@ -15,6 +15,8 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
     return svgImage != null
         ? Center(
             child: SvgPicture.asset(
@@ -30,12 +32,15 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                 TextButton.icon(
                   label: Text(
                     filterName!,
-                    style: const TextStyle(
-                      color: Colors.black,
+                    style: TextStyle(
+                      color: colorScheme.tertiary,
                     ),
                   ),
                   onPressed: () {},
-                  icon: SvgPicture.asset('assets/icons/filter.svg'),
+                  icon: SvgPicture.asset(
+                    'assets/icons/filter.svg',
+                    color: colorScheme.tertiary,
+                  ),
                 ),
               if (actions != null)
                 Row(

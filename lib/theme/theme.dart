@@ -15,15 +15,23 @@ ThemeData lightMode = ThemeData(
 );
 
 ThemeData darkMode = ThemeData(
-  brightness: Brightness.dark,
-  colorScheme: ColorScheme.dark(
-    surface: Colors.black,
-    primary: Colors.grey.shade800,
-    secondary: const Color.fromARGB(255, 40, 125, 194),
-    tertiary: Colors.white, // Text color
-  ),
-  textTheme: Typography.whiteCupertino.apply(
-    bodyColor: Colors.white,
-    displayColor: Colors.white,
-  ),
-);
+    brightness: Brightness.dark,
+    colorScheme: ColorScheme.dark(
+      surface: Colors.black,
+      primary: Colors.grey.shade800,
+      secondary: const Color.fromARGB(255, 40, 125, 194),
+      tertiary: Colors.white, // Text color
+    ),
+    textTheme: Typography.whiteCupertino.apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
+    ),
+    iconButtonTheme: const IconButtonThemeData(
+        style: ButtonStyle(
+            iconColor: WidgetStatePropertyAll(Colors.white),
+            textStyle: WidgetStatePropertyAll(TextStyle(color: Colors.white)))),
+    textButtonTheme: const TextButtonThemeData(
+        style: ButtonStyle(
+            iconColor: WidgetStatePropertyAll(Colors.white),
+            textStyle:
+                WidgetStatePropertyAll(TextStyle(color: Colors.white)))));

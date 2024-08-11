@@ -1,5 +1,6 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:musicplayer/controller/player_controller.dart';
 import 'package:musicplayer/cubit/home_carousel_controller_cubit.dart';
@@ -10,127 +11,10 @@ import 'package:musicplayer/widgets/applogo.dart';
 import 'package:musicplayer/widgets/bottom_bar_carousal.dart';
 import 'package:musicplayer/widgets/custom_app_bar.dart';
 import 'package:musicplayer/utils/main_appbar_action.dart';
+import 'package:musicplayer/widgets/svg_icon_button.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:svg_flutter/svg.dart';
+// import 'package:svg_flutter/svg.dart';
 
-// class Songs extends StatefulWidget {
-//   const Songs({super.key});
-
-//   @override
-//   _SongsState createState() => _SongsState();
-// }
-
-// class _SongsState extends State<Songs> {
-//   // Main method.
-//   final OnAudioQuery _audioQuery = OnAudioQuery();
-
-//   // Indicate if application has permission to the library.
-//   bool _hasPermission = false;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     // (Optinal) Set logging level. By default will be set to 'WARN'.
-//     //
-//     // Log will appear on:
-//     //  * XCode: Debug Console
-//     //  * VsCode: Debug Console
-//     //  * Android Studio: Debug and Logcat Console
-//     LogConfig logConfig = LogConfig(logType: LogType.DEBUG);
-//     _audioQuery.setLogConfig(logConfig);
-
-//     // Check and request for permission.
-//     checkAndRequestPermissions();
-//   }
-
-//   checkAndRequestPermissions({bool retry = false}) async {
-//     // The param 'retryRequest' is false, by default.
-//     _hasPermission = await _audioQuery.checkAndRequest(
-//       retryRequest: retry,
-//     );
-
-//     // Only call update the UI if application has all required permissions.
-//     _hasPermission ? setState(() {}) : null;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text("OnAudioQueryExample"),
-//         elevation: 2,
-//       ),
-//       body: Center(
-//         child: !_hasPermission
-//             ? noAccessToLibraryWidget()
-//             : FutureBuilder<List<SongModel>>(
-//                 // Default values:
-//                 future: _audioQuery.querySongs(
-//                   sortType: null,
-//                   orderType: OrderType.ASC_OR_SMALLER,
-//                   uriType: UriType.EXTERNAL,
-//                   ignoreCase: true,
-//                 ),
-//                 builder: (context, item) {
-//                   // Display error, if any.
-//                   if (item.hasError) {
-//                     return Text(item.error.toString());
-//                   }
-
-//                   // Waiting content.
-//                   if (item.data == null) {
-//                     return const CircularProgressIndicator();
-//                   }
-
-//                   // 'Library' is empty.
-//                   if (item.data!.isEmpty) return const Text("Nothing found!");
-
-//                   // You can use [item.data!] direct or you can create a:
-//                   // List<SongModel> songs = item.data!;
-//                   return ListView.builder(
-//                     itemCount: item.data!.length,
-//                     itemBuilder: (context, index) {
-//                       return ListTile(
-//                         title: Text(item.data![index].title),
-//                         subtitle: Text(item.data![index].artist ?? "No Artist"),
-//                         trailing: const Icon(Icons.arrow_forward_rounded),
-//                         // This Widget will query/load image.
-//                         // You can use/create your own widget/method using [queryArtwork].
-//                         leading: QueryArtworkWidget(
-//                           controller: _audioQuery,
-//                           id: item.data![index].id,
-//                           type: ArtworkType.AUDIO,
-//                         ),
-//                       );
-//                     },
-//                   );
-//                 },
-//               ),
-//       ),
-//     );
-//   }
-
-//   Widget noAccessToLibraryWidget() {
-//     return Container(
-//       decoration: BoxDecoration(
-//         borderRadius: BorderRadius.circular(10),
-//         color: Colors.redAccent.withOpacity(0.5),
-//       ),
-//       padding: const EdgeInsets.all(20),
-//       child: Column(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           const Text("Application doesn't have access to the library"),
-//           const SizedBox(height: 10),
-//           ElevatedButton(
-//             onPressed: () => checkAndRequestPermissions(retry: true),
-//             child: const Text("Allow"),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -210,16 +94,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: Obx(
         () {
-          if (playerController.songs.isEmpty) {
+          if (playerController.currentPlayingSong.isEmpty) {
             return const SizedBox();
           }
 
-          final currentSong = playerController.shuffledSongs.isNotEmpty
-              ? playerController
-                  .shuffledSongs[playerController.currentIndex.value]
-              : playerController.songs[playerController.currentIndex.value];
+          final currentSong = playerController
+              .currentPlayingSong[playerController.currentIndex.value];
+
           final isPlaying = playerController.isPlaying.value;
-          print(playerController.shuffledSongs.isNotEmpty);
+          // print(playerController.currentPlayingSong.isNotEmpty);
           return GestureDetector(
             onTap: () {
               Get.toNamed(
@@ -236,12 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
               clipBehavior: Clip.hardEdge,
               padding: const EdgeInsets.all(10),
               margin: const EdgeInsets.only(left: 24, right: 24, bottom: 14),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(60)),
-                boxShadow: [
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                borderRadius: const BorderRadius.all(Radius.circular(60)),
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black,
+                    color: Color.fromARGB(100, 0, 0, 0),
                     blurStyle: BlurStyle.normal,
                     blurRadius: 15,
                     spreadRadius: 1,
@@ -255,9 +138,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.grey.shade400,
                     ),
                     child: QueryArtworkWidget(
+                      // artworkColor:
                       controller: playerController.audioQuery,
                       id: currentSong.id,
                       type: ArtworkType.AUDIO,
@@ -297,6 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           playerController.onBackPlay();
                         },
+                        iconColor: colorScheme.tertiary,
                       ),
                       SvgIconButton(
                         svg: isPlaying
@@ -305,18 +191,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           playerController.playPause();
                         },
+                        iconColor: colorScheme.tertiary,
                       ),
                       SvgIconButton(
                         svg: CustomIcons.forwardIcon,
                         onPressed: () {
                           playerController.onNextPlay();
                         },
+                        iconColor: colorScheme.tertiary,
                       ),
                       SvgIconButton(
                         svg: CustomIcons.listmusicIcon,
                         onPressed: () {
                           // showPlaylist(context);
                         },
+                        iconColor: colorScheme.tertiary,
                       ),
                     ],
                   ),
@@ -325,42 +214,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class SvgIconButton extends StatelessWidget {
-  const SvgIconButton({
-    super.key,
-    required this.onPressed,
-    required this.svg,
-    this.height = 22,
-    this.color,
-  });
-  final Color? color;
-  final String svg;
-  final void Function()? onPressed;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          color: color,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(
-              25,
-            ),
-          )),
-      child: IconButton(
-        highlightColor: Colors.grey[200],
-        // disabledColor: Colors.red,
-        icon: SvgPicture.asset(
-          svg,
-          height: height,
-        ),
-        onPressed: onPressed,
       ),
     );
   }

@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:math';
+// import 'dart:ui';
 // import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:audio_waveforms/audio_waveforms.dart' as visualizer;
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:flutter/material.dart';
+// import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:musicplayer/model/db_song_model.dart';
+import 'package:musicplayer/model/music_model.dart';
 import 'package:musicplayer/server/database_helper.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,10 +26,59 @@ class PlayerControllers extends GetxController {
   var currentValue = 0.0.obs;
   RxInt randomNumber = 0.obs;
   RxList<SongModel> songs = <SongModel>[].obs;
-  RxList<SongModel> shuffledSongs = <SongModel>[].obs;
+  RxList<SongModel> currentPlayingSong = <SongModel>[].obs;
   RxList<SongModel> favoriteSongs = <SongModel>[].obs;
+  RxList<SongModel> recentSongs = <SongModel>[].obs;
+  var albums = <AlbumModel>[].obs;
+  var playlist = <PlaylistsModel>[].obs;
+  var artists = <ArtistModel>[].obs;
+  RxList<SongModel> albumSongs = <SongModel>[].obs;
+  RxList<SongModel> artistSongs = <SongModel>[].obs;
+  RxList<SongModel> playlistSongs = <SongModel>[].obs;
+  RxList<SongModel> folderSongs = <SongModel>[].obs;
   visualizer.PlayerController playerController = visualizer.PlayerController();
+  Timer? colorChangeTimer;
+
+  RxList<MusicFolder> folders = <MusicFolder>[].obs;
   // ..setVolume(0);
+  final dbHelper = DatabaseHelper();
+  var backgroundColors = <Color>[Colors.blue, Colors.purple].obs;
+
+  // Method to change the background colors
+  void changeBackgroundColors() {
+    // Generate new random colors for the background
+    final randomColor1 =
+        Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
+    final randomColor2 =
+        Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
+
+    // Update the backgroundColors list with the new colors
+    backgroundColors.value = [
+      createMaterialColor(randomColor1),
+      createMaterialColor(randomColor2)
+    ];
+  }
+
+  MaterialColor createMaterialColor(Color color) {
+    List strengths = <double>[.05];
+    final swatch = <int, Color>{};
+    final int r = color.red, g = color.green, b = color.blue;
+
+    for (int i = 1; i < 10; i++) {
+      strengths.add(0.1 * i);
+    }
+    for (var strength in strengths) {
+      final double ds = 0.5 - strength;
+      swatch[(strength * 1000).round()] = Color.fromRGBO(
+        r + ((ds < 0 ? r : (255 - r)) * ds).round(),
+        g + ((ds < 0 ? g : (255 - g)) * ds).round(),
+        b + ((ds < 0 ? b : (255 - b)) * ds).round(),
+        1,
+      );
+    }
+    return MaterialColor(color.value, swatch);
+  }
+
   List coverImageList = [
     "assets/bg/bg.jpg",
     "assets/bg/bg1.jpg",
@@ -42,12 +95,19 @@ class PlayerControllers extends GetxController {
     // playerController.setVolume(0);
     super.onInit();
     await checkAndRequestPermissions();
-    loadCurrentSong();
-    loadFavorites();
-    audioPlayer.currentIndexStream.listen((index) {
+    await loadCurrentSong();
+    await loadFavorites();
+    await loadRecents();
+    await loadMusicFolders();
+    await loadArtists();
+    await loadAlbums();
+    loadPlaylists();
+
+    startColorChangeTimer();
+    audioPlayer.currentIndexStream.listen((index) async {
       if (index != null) {
         currentIndex.value = index;
-        saveCurrentSong();
+        await saveCurrentSong();
       }
     });
 
@@ -75,15 +135,106 @@ class PlayerControllers extends GetxController {
     startVisualizer();
   }
 
-  void loadFavorites() async {
-    final dbHelper = DatabaseHelper();
-    final favoriteSongMaps = await dbHelper.getFavorites();
-
-    final listOfFavorite = favoriteSongMaps.map((e) => DbSongModel.fromJson(e)).toList();
-
-    // favoriteSongs.value = ;
+  @override
+  void onClose() {
+    colorChangeTimer?.cancel();
+    super.onClose();
   }
 
+  // Future<void> loadArtists() async {
+  //   var queriedArtists = await audioQuery.queryArtists();
+  //   artists.value = queriedArtists;
+  // }
+
+  void startColorChangeTimer() {
+    colorChangeTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      changeBackgroundColors();
+    });
+  }
+
+  Future<void> loadFavorites() async {
+    favoriteSongs.clear();
+    // final dbHelper = DatabaseHelper();
+    final favoriteSongMaps = await dbHelper.getFavorites();
+
+    final listOfFavorite =
+        favoriteSongMaps.map((e) => DbSongModel.fromJson(e)).toList();
+
+    for (var favorite in listOfFavorite) {
+      final matchingSong =
+          songs.firstWhereOrNull((element) => element.id == favorite.id);
+      if (matchingSong != null) {
+        favoriteSongs.add(matchingSong);
+      }
+    }
+    // print(favoriteSongs.length);
+  }
+
+  Future<void> loadPlaylists() async {
+    playlist.value = await dbHelper.getPlaylists();
+  }
+
+  Future<void> loadRecents() async {
+    recentSongs.clear();
+    // final dbHelper = DatabaseHelper();
+    final favoriteSongMaps = await dbHelper.getRecents();
+
+    final listOfRecent =
+        favoriteSongMaps.map((e) => DbSongModel.fromJson(e)).toList();
+
+    for (var favorite in listOfRecent) {
+      final matchingSong =
+          songs.firstWhereOrNull((element) => element.id == favorite.id);
+      if (matchingSong != null) {
+        recentSongs.add(matchingSong);
+      }
+    }
+    // print(recentSongs.length);
+  }
+
+  Future<void> addSongToFavorites(SongModel song) async {
+    final favorite =
+        DbSongModel(id: song.id, title: song.title, uri: song.uri!).toJson();
+
+    // final dbHelper = DatabaseHelper();
+    await dbHelper.insertFavorite(favorite);
+    await loadFavorites();
+  }
+
+  Future<void> addSongToRecents(SongModel song) async {
+    final recent =
+        DbSongModel(id: song.id, title: song.title, uri: song.uri!).toJson();
+
+    // final dbHelper = DatabaseHelper();
+    await dbHelper.insertRecent(recent);
+    await loadRecents().then((kj) {
+      // print('object');
+    }); // Reload favorites after adding
+  }
+
+  Future<void> removeSongFromFavorites(int id) async {
+    // final dbHelper = DatabaseHelper();
+    await dbHelper.deleteFavorite(id);
+    await loadFavorites(); // Reload favorites after removal
+  }
+
+  void removeSongFromRecents(int id) async {
+    // final dbHelper = DatabaseHelper();
+    await dbHelper.deleteRecent(id);
+    await loadRecents(); // Reload favorites after removal
+  }
+
+  Future<void> loadFolderSongs(MusicFolder musicFolder) async {
+    folderSongs.clear();
+    folderSongs.addAll(songs.where((song) =>
+        song.data.substring(0, song.data.lastIndexOf('/')) ==
+            musicFolder.path &&
+        song.data.substring(0, song.data.lastIndexOf('/')).split('/').last ==
+            musicFolder.name));
+    // return null;
+  }
+
+// db.get('TABLE')
   void startVisualizer() {
     // playerController.preparePlayer(path: songs[currentIndex.value].data);
   }
@@ -97,6 +248,24 @@ class PlayerControllers extends GetxController {
     //     ? await playerController.pausePlayer()
     //     : await playerController.startPlayer(finishMode: FinishMode.loop);
   }
+  Future<void> loadArtistSongs(ArtistModel artist) async {
+    // Assuming you have a method to query songs by artist
+    List<SongModel> songs = await audioQuery.queryAudiosFrom(
+      AudiosFromType.ARTIST_ID,
+      artist.id.toString(),
+    );
+    artistSongs.value = songs;
+    // return artistSongs;
+  }
+
+  Future<void> loadAlbumSongs(AlbumModel album) async {
+    // Assuming you have a method to query songs by artist
+    List<SongModel> songs = await audioQuery.queryAudiosFrom(
+      AudiosFromType.ALBUM_ID,
+      album.id.toString(),
+    );
+    albumSongs.value = songs;
+  }
 
   void playPause() {
     if (audioPlayer.playing) {
@@ -109,8 +278,18 @@ class PlayerControllers extends GetxController {
     }
   }
 
+  Future<void> loadArtists() async {
+    var queriedArtists = await audioQuery.queryArtists();
+    artists.value = queriedArtists;
+  }
+
+  Future<void> loadAlbums() async {
+    var queriedAlbums = await audioQuery.queryAlbums();
+    albums.value = queriedAlbums;
+  }
+
   void onNextPlay() {
-    if (currentIndex.value < songs.length - 1) {
+    if (currentIndex.value < currentPlayingSong.length - 1) {
       startVisualizer();
       // playerController.startPlayer();
       audioPlayer.seekToNext();
@@ -131,13 +310,46 @@ class PlayerControllers extends GetxController {
     audioPlayer.seek(duration);
   }
 
-  void songPlay(String uri, int index, [bool restart = false]) {
-    currentIndex.value = index;
+  Future<List<MusicFolder>> loadMusicFolders() async {
+    final OnAudioQuery audioQuery = OnAudioQuery();
+
+    // Requesting storage permission
+    bool permissionStatus = await audioQuery.permissionsStatus();
+    if (!permissionStatus) {
+      permissionStatus = await audioQuery.permissionsRequest();
+      if (!permissionStatus) {
+        return folders; // Return empty if permission is not granted
+      }
+    }
+
+    // Query all songs
+    // List<SongModel> allSongs = await audioQuery.querySongs();
+
+    // Organize songs by folder
+    Map<String, MusicFolder> folderMap = {};
+
+    for (SongModel song in songs) {
+      String folderPath = song.data.substring(0, song.data.lastIndexOf('/'));
+      String folderName = folderPath.split('/').last;
+
+      if (!folderMap.containsKey(folderPath)) {
+        folderMap[folderPath] =
+            MusicFolder(name: folderName, path: folderPath, songs: []);
+      }
+      folderMap[folderPath]?.songs.add(song.displayName);
+    }
+
+    // Convert the map to a list
+    folders.value = folderMap.values.toList();
+    return folders;
+  }
+
+  void playSongs([bool play = false]) {
     try {
       audioPlayer
           .setAudioSource(
         ConcatenatingAudioSource(
-          children: songs
+          children: currentPlayingSong
               .map((song) => AudioSource.uri(
                     Uri.parse(song.uri!),
                     tag: MediaItem(
@@ -148,7 +360,7 @@ class PlayerControllers extends GetxController {
                   ))
               .toList(),
         ),
-        initialIndex: index,
+        // initialIndex: index,
       )
           .then((_) {
         // Set max to the duration of the current song
@@ -157,16 +369,18 @@ class PlayerControllers extends GetxController {
             max.value = duration.inSeconds.toDouble();
           }
         });
-        if (!restart) {
+        if (play) {
           audioPlayer.play();
-          getRandomNumber();
-          saveCurrentSong();
         }
+        // if (!restart) {
+        //   audioPlayer.play();
+        //   getRandomNumber();
+        saveCurrentSong();
+        // }
       });
-      startVisualizer();
+      // startVisualizer();
       // playerController.startPlayer();
     } catch (e) {
-      print(e);
     }
   }
 
@@ -177,6 +391,8 @@ class PlayerControllers extends GetxController {
       var queriedSongs = await audioQuery.querySongs();
       if (queriedSongs.isNotEmpty) {
         songs.value = queriedSongs;
+        // currentPlayingSong.value = queriedSongs;
+        // print(currentPlayingSong.length);
       }
     } else {
       throw Exception('Permission Denied');
@@ -188,104 +404,148 @@ class PlayerControllers extends GetxController {
     isLooping.value = !isLooping.value;
   }
 
-  void saveCurrentSong() async {
+  Future<void> saveCurrentSong() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentSong = songs[currentIndex.value];
+    final currentSong = currentPlayingSong[currentIndex.value];
     prefs.setInt('currentSongId', currentSong.id);
     prefs.setInt('currentSongIndex', currentIndex.value);
+    await addSongToRecents(currentSong);
   }
 
-  void loadCurrentSong() async {
+  Future<void> loadCurrentSong() async {
     final prefs = await SharedPreferences.getInstance();
     final songId = prefs.getInt('currentSongId');
     final songIndex = prefs.getInt('currentSongIndex') ?? 0;
 
     if (songId != null) {
-      final song = songs.firstWhere((song) => song.id == songId,
-          orElse: () => songs[songIndex]);
+      final song = songs.firstWhere(
+        (song) => song.id == songId,
+        orElse: () => songs[songIndex],
+      );
+
+      currentPlayingSong.value = [song];
+      currentPlayingSong.addAll(
+        songs.where((song) => song.id != songId).toList(),
+      );
       currentIndex.value = songIndex;
-      songPlay(song.uri!, songIndex, true);
+      playSongs();
     }
   }
 
   void playSongList(
       List<SongModel> listOfSong, String album, SongModel songModel) {
-    shuffledSongs.clear();
+    currentPlayingSong.clear();
 
     // Reorder the list to start with the selected song
-    List<SongModel> reorderedList = [songModel];
-    reorderedList.addAll(listOfSong.where((song) => song.id != songModel.id));
+    currentPlayingSong.value = [songModel];
+    currentPlayingSong
+        .addAll(listOfSong.where((song) => song.id != songModel.id));
 
     // Set up the audio source with the reordered list
-    audioPlayer
-        .setAudioSource(ConcatenatingAudioSource(
-            children: reorderedList
-                .map((song) => AudioSource.uri(Uri.parse(song.uri!),
-                    tag: MediaItem(
-                      id: song.id.toString(),
-                      album: album,
-                      title: song.title,
-                    )))
-                .toList()))
-        .catchError((error) {
-      print("An error occurred: $error");
-    });
+    // audioPlayer
+    //     .setAudioSource(ConcatenatingAudioSource(
+    //         children: currentPlayingSong
+    //             .map((song) => AudioSource.uri(Uri.parse(song.uri!),
+    //                 tag: MediaItem(
+    //                   id: song.id.toString(),
+    //                   album: album,
+    //                   title: song.title,
+    //                 )))
+    //             .toList()))
+    //     .catchError((error) {
+    //   print("An error occurred: $error");
+    // });
 
-    startVisualizer();
+    // startVisualizer();
     // playerController.startPlayer();
-    audioPlayer.play();
+    // audioPlayer.play();
+    playSongs(true);
   }
 
   void playSequential() {
-    shuffledSongs.clear();
-    audioPlayer
-        .setAudioSource(
-      ConcatenatingAudioSource(
-        children: songs
-            .map((song) => AudioSource.uri(
-                  Uri.parse(song.uri!),
-                  tag: MediaItem(
-                    id: song.id.toString(),
-                    album: "Sonic Pulse",
-                    title: song.title,
-                  ),
-                ))
-            .toList(),
-      ),
-    )
-        .catchError((error) {
-      print("An error occurred: $error");
-    });
-    startVisualizer();
-    // playerController.startPlayer();
-    audioPlayer.play();
+    currentPlayingSong.clear();
+    currentPlayingSong.value = List.from(songs);
+    playSongs(true);
+    //     .catchError((error) {
+    //   print("An error occurred: $error");
+    // });
+    // startVisualizer();
+    // // playerController.startPlayer();
+    // audioPlayer.play();
   }
 
   void playShuffled() {
-    shuffledSongs.value = List.from(songs);
-    shuffledSongs.shuffle();
+    currentPlayingSong.clear();
+    currentPlayingSong.value = List.from(songs);
+    currentPlayingSong.shuffle();
     currentIndex.value = 0;
-    audioPlayer
-        .setAudioSource(
-      ConcatenatingAudioSource(
-        children: shuffledSongs
-            .map((song) => AudioSource.uri(
-                  Uri.parse(song.uri!),
-                  tag: MediaItem(
-                    id: song.id.toString(),
-                    album: "Sonic Pulse",
-                    title: song.title,
-                  ),
-                ))
-            .toList(),
-      ),
-      initialIndex: 0,
-    )
-        .catchError((error) {
-      print("An error occurred: $error");
-    });
-    startVisualizer();
+    playSongs(true);
+    // audioPlayer
+    //     .setAudioSource(
+    //   ConcatenatingAudioSource(
+    //     children: currentPlayingSong
+    //         .map((song) => AudioSource.uri(
+    //               Uri.parse(song.uri!),
+    //               tag: MediaItem(
+    //                 id: song.id.toString(),
+    //                 album: "Sonic Pulse",
+    //                 title: song.title,
+    //               ),
+    //             ))
+    //         .toList(),
+    //   ),
+    //   initialIndex: 0,
+    // )
+    //     .catchError((error) {
+    //   print("An error occurred: $error");
+    // });
+    // startVisualizer();
     // playerController.startPlayer();
-    audioPlayer.play();
+    // audioPlayer.play();
   }
+
+  // Future<void> createPlaylist(String name, SongModel songModel) async {
+  //   final int playlistID = await dbHelper.createPlaylist(name);
+  //   await dbHelper.addSongToPlaylist(
+  //     playlistID,
+  //     DbSongModel(id: songModel.id, title: songModel.title, uri: songModel.uri!)
+  //         .toJson(),
+  //   );
+
+  // }
+
+  // Future<List<Map<String, dynamic>>> getPlaylists() async {
+  //   return await dbHelper.getPlaylists();
+  // }
+
+  // Future<List<Map<String, dynamic>>> getPlaylists() async {
+  //   return await dbHelper.getPlaylists();
+  // }
+
+  Future<void> createPlaylist(String name, SongModel songModel) async {
+    // final int playlistID = await dbHelper.createPlaylist(name);
+    final playlistId = await dbHelper.createPlaylist(name);
+    addSongToPlaylist(
+      playlistId,
+      songModel,
+    );
+  }
+
+  Future<void> addSongToPlaylist(int playlistId, SongModel songModel) async {
+    await dbHelper.addSongToPlaylist(
+        playlistId,
+        DbSongModel(
+            id: songModel.id, title: songModel.title, uri: songModel.uri!));
+  }
+
+  Future<List<SongModel>> getSongsFromPlaylist(int playlistId) async {
+    playlistSongs.clear();
+    final listOfPlaylist = await dbHelper.getSongsInPlaylist(playlistId);
+    for (var playlist in listOfPlaylist) {
+      playlistSongs.addAll(songs.where((song) => song.id == playlist.songId));
+    }
+    return playlistSongs;
+  }
+
+  // getPlaylists() {}
 }

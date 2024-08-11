@@ -1,5 +1,7 @@
 // import 'dart:async';
 
+// ignore_for_file: empty_catches
+
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,7 +14,6 @@ class HomeAppBarCarouselController extends GetxController {
       await carouselController.animateToPage(pageNum);
       update(); // Notify listeners
     } catch (e) {
-      print('Error while changing page: $e');
     }
   }
 
@@ -21,7 +22,6 @@ class HomeAppBarCarouselController extends GetxController {
       carouselController.jumpToPage(pageNum);
       update(); // Notify listeners
     } catch (e) {
-      print('Error while changing page: $e');
     }
   }
 }
@@ -39,7 +39,6 @@ class HomeScreenPageController extends GetxController {
       );
       update(); // Notify listeners
     } catch (e) {
-      print('Error while changing page: $e');
     }
   }
 
@@ -48,7 +47,6 @@ class HomeScreenPageController extends GetxController {
       pageController.jumpToPage(pageNum);
       update(); // Notify listeners
     } catch (e) {
-      print('Error while changing page: $e');
     }
   }
 }

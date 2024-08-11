@@ -1,16 +1,23 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:musicplayer/controller/artist_controller.dart';
+import 'package:musicplayer/controller/player_controller.dart';
 import 'package:musicplayer/screens/artist/artist_details_screen.dart';
+import 'package:musicplayer/screens/musics/music_list_page.dart';
+import 'package:musicplayer/utils/tracklist.dart';
 import 'package:musicplayer/widgets/screen_app_bar.dart';
 
 class ArtistScreen extends StatelessWidget {
-  final ArtistController artistController = Get.put(ArtistController());
+  // final ArtistController artistController = Get.put(ArtistController());
 
-  ArtistScreen({super.key});
+  const ArtistScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final PlayerControllers playerController = Get.find<PlayerControllers>();
+
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -39,7 +46,7 @@ class ArtistScreen extends StatelessWidget {
                 ),
               ),
               Obx(() {
-                if (artistController.artists.isEmpty) {
+                if (playerController.artists.isEmpty) {
                   return SliverToBoxAdapter(
                     child: Center(
                       child: CircularProgressIndicator(
@@ -51,7 +58,7 @@ class ArtistScreen extends StatelessWidget {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        final artist = artistController.artists[index];
+                        final artist = playerController.artists[index];
                         return ListTile(
                           leading: const Icon(
                             Icons.album,
@@ -60,15 +67,25 @@ class ArtistScreen extends StatelessWidget {
                             artist.artist,
                           ),
                           subtitle: Text(
-                            'Artist: ${artist.artist ?? 'Unknown'}',
+                            'Artist: ${artist.artist}',
                           ),
-                          onTap: () {
-                            Get.to(
-                                () => ArtistDetailScreen(artistModel: artist));
+                          onTap: () async {
+                            await playerController
+                                .loadArtistSongs(artist)
+                                .then((_) {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) {
+                                  return MusicListPage(
+                                    trackList: TrackList.artist,
+                                    trackName: artist.artist,
+                                  );
+                                },
+                              ));
+                            });
                           },
                         );
                       },
-                      childCount: artistController.artists.length,
+                      childCount: playerController.artists.length,
                     ),
                   );
                 }
