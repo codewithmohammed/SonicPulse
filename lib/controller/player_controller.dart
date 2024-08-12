@@ -12,6 +12,7 @@ import 'package:musicplayer/model/db_song_model.dart';
 import 'package:musicplayer/model/music_model.dart';
 import 'package:musicplayer/server/database_helper.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerControllers extends GetxController {
@@ -94,14 +95,7 @@ class PlayerControllers extends GetxController {
   void onInit() async {
     // playerController.setVolume(0);
     super.onInit();
-    await checkAndRequestPermissions();
-    await loadCurrentSong();
-    await loadFavorites();
-    await loadRecents();
-    await loadMusicFolders();
-    await loadArtists();
-    await loadAlbums();
-    loadPlaylists();
+    await initializeApp();
 
     startColorChangeTimer();
     audioPlayer.currentIndexStream.listen((index) async {
@@ -133,6 +127,25 @@ class PlayerControllers extends GetxController {
       isPlaying.value = playerState.playing;
     });
     startVisualizer();
+  }
+
+  Future<void> initializeApp() async {
+    try {
+      // Ensure permissions are handled first
+      await checkAndRequestPermissions();
+
+      // Load other data after permissions are granted
+      await loadCurrentSong();
+      await loadFavorites();
+      await loadRecents();
+      await loadMusicFolders();
+      await loadArtists();
+      await loadAlbums();
+      await loadPlaylists();
+    } catch (e) {
+      // Handle any errors here, such as permission denied
+      // print('Error during initialization: $e');
+    }
   }
 
   @override
@@ -380,21 +393,35 @@ class PlayerControllers extends GetxController {
       });
       // startVisualizer();
       // playerController.startPlayer();
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
+// import 'package:permission_handler/permission_handler.dart';
+
   Future<void> checkAndRequestPermissions({bool retry = false}) async {
-    bool permissionGranted =
-        await audioQuery.checkAndRequest(retryRequest: retry);
-    if (permissionGranted) {
+    // Request storage permission using permission_handler
+    PermissionStatus permissionStatus;
+
+    // Check the current status of the audio permission
+    permissionStatus = await Permission.audio.status;
+
+    // If the permission is denied, request it
+    if (permissionStatus.isDenied) {
+      permissionStatus = await Permission.audio.request();
+    }
+
+    // Check if the permission is granted
+    if (permissionStatus.isGranted) {
+      // Query songs if permission is granted
       var queriedSongs = await audioQuery.querySongs();
       if (queriedSongs.isNotEmpty) {
         songs.value = queriedSongs;
-        // currentPlayingSong.value = queriedSongs;
-        // print(currentPlayingSong.length);
       }
+    } else if (permissionStatus.isDenied && retry) {
+      // Optionally retry permission request if it's denied
+      await checkAndRequestPermissions(retry: false);
     } else {
+      // Handle permission denied scenario
       throw Exception('Permission Denied');
     }
   }

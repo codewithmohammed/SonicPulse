@@ -21,14 +21,13 @@ class MyApp extends StatelessWidget {
       // home: const HomeScreen(),
       initialRoute: '/',
       getPages: [
-        GetPage(name: '/', page: () => const HomeScreen()),
+        GetPage(
+          name: '/',
+          page: () => const HomeScreen(),
+        ),
         GetPage(
           name: '/musicPlayer',
-          page: () => MusicPlayerPage(
-            // imageUrl: Get.parameters['imageUrl']!,
-            // title: Get.parameters['title']!,
-            // artist: Get.parameters['artist']!,
-          ),
+          page: () => MusicPlayerPage(),
           transition: Transition.downToUp,
         ),
       ],
