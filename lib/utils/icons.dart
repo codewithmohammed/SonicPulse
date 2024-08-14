@@ -9,4 +9,5 @@ class CustomIcons {
   static const String pauseIcon = 'assets/icons/pause.svg';
   static const String refreshIcon = 'assets/icons/refresh.svg';
   static const String dotsVerticalIcon = 'assets/icons/dots_vertical.svg';
+    static const String backButton = 'assets/icons/back_button.svg';
 }

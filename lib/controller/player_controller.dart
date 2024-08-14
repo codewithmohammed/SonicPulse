@@ -202,7 +202,7 @@ class PlayerControllers extends GetxController {
         recentSongs.add(matchingSong);
       }
     }
-    // print(recentSongs.length);
+    print(recentSongs.length);
   }
 
   Future<void> addSongToFavorites(SongModel song) async {

@@ -4,4 +4,5 @@ enum TrackList {
   album,
   artist,
   folder,
+  recent,
 }

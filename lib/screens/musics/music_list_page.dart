@@ -51,7 +51,7 @@ class MusicListPage extends StatelessWidget {
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          svg: CustomIcons.backwardIcon),
+                          svg: CustomIcons.backButton,),
                       AppLogo(colorScheme: colorScheme),
                     ],
                   ),

@@ -37,23 +37,25 @@ class TrackScreen extends StatelessWidget {
               SliverToBoxAdapter(
                 child: ScreenAppBar(
                   filterName: 'Name',
-                  actions: [
-                    SvgIconButton(
-                      // color: colorScheme.surface,
-                      onPressed: () {
-                        playerController.playSequential();
-                      },
-                      svg: CustomIcons.playIcon,
-                      iconColor: colorScheme.tertiary,
-                    ),
-                    SvgIconButton(
-                      onPressed: () {
-                        playerController.playShuffled();
-                      },
-                      svg: CustomIcons.shuffleIcon,
-                      iconColor: colorScheme.tertiary,
-                    ),
-                  ],
+                  actions: trackList == TrackList.tracks
+                      ? [
+                          SvgIconButton(
+                            // color: colorScheme.surface,
+                            onPressed: () {
+                              playerController.playSequential();
+                            },
+                            svg: CustomIcons.playIcon,
+                            iconColor: colorScheme.tertiary,
+                          ),
+                          SvgIconButton(
+                            onPressed: () {
+                              playerController.playShuffled();
+                            },
+                            svg: CustomIcons.shuffleIcon,
+                            iconColor: colorScheme.tertiary,
+                          ),
+                        ]
+                      : [],
                 ),
               ),
               Obx(() {
@@ -61,11 +63,13 @@ class TrackScreen extends StatelessWidget {
                     ? playerController.artistSongs
                     : trackList == TrackList.album
                         ? playerController.albumSongs
-                        : trackList == TrackList.folder
-                            ? playerController.folderSongs
-                            : trackList == TrackList.playlist
-                                ? playerController.playlistSongs
-                                : playerController.songs;
+                        : trackList == TrackList.recent
+                            ? playerController.recentSongs
+                            : trackList == TrackList.folder
+                                ? playerController.folderSongs
+                                : trackList == TrackList.playlist
+                                    ? playerController.playlistSongs
+                                    : playerController.songs;
                 // print(songs.length);
                 return songs.isEmpty
                     ? SliverList(

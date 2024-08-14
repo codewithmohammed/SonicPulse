@@ -64,7 +64,7 @@ class PlaylistScreen extends StatelessWidget {
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) {
                                 return const MusicListPage(
-                                  trackList: TrackList.playlist,
+                                  trackList: TrackList.recent,
                                   trackName: 'Recent Songs',
                                 );
                               },
@@ -78,37 +78,39 @@ class PlaylistScreen extends StatelessWidget {
             ),
           ),
 
-         Obx(() {
-  if (playerController.playlist.isEmpty) {
-    return const Center(child: Text('No playlists found'));
-  } else {
-    return ListView.builder(
-      itemCount: playerController.playlist.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        final playlist = playerController.playlist[index];
-        return FolderListTile(
-          playlist: playlist,
-          onTap: () async {
-            await playerController.getSongsFromPlaylist(playlist.id).then(
-              (_) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) {
-                    return MusicListPage(
-                      trackList: TrackList.playlist,
-                      trackName: playlist.name,
-                    );
-                  },
-                ));
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-}),
+          Obx(() {
+            if (playerController.playlist.isEmpty) {
+              return const Center(child: Text('No playlists found'));
+            } else {
+              return ListView.builder(
+                itemCount: playerController.playlist.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final playlist = playerController.playlist[index];
+                  return FolderListTile(
+                    playlist: playlist,
+                    onTap: () async {
+                      await playerController
+                          .getSongsFromPlaylist(playlist.id)
+                          .then(
+                        (_) {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) {
+                              return MusicListPage(
+                                trackList: TrackList.playlist,
+                                trackName: playlist.name,
+                              );
+                            },
+                          ));
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            }
+          }),
 
           //  ListView.builder(itemBuilder:(context, index) {
           //    return  FolderListTile(playerController: , song: song, colorScheme: colorScheme, listOfPopup: listOfPopup, onSelectedPopup: onSelectedPopup, listOfSongModel: listOfSongModel)
